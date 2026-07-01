@@ -14,7 +14,154 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      clinical_memory: {
+        Row: {
+          data: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          data?: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          data?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          metadata: Json
+          role: string
+          thread_id: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          metadata?: Json
+          role: string
+          thread_id: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          metadata?: Json
+          role?: string
+          thread_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "threads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          discharge_date: string | null
+          display_name: string | null
+          id: string
+          primary_condition: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          discharge_date?: string | null
+          display_name?: string | null
+          id: string
+          primary_condition?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          discharge_date?: string | null
+          display_name?: string | null
+          id?: string
+          primary_condition?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      safety_alerts: {
+        Row: {
+          acknowledged: boolean
+          created_at: string
+          id: string
+          payload: Json
+          reason: string
+          severity: string
+          thread_id: string | null
+          user_id: string
+        }
+        Insert: {
+          acknowledged?: boolean
+          created_at?: string
+          id?: string
+          payload?: Json
+          reason: string
+          severity: string
+          thread_id?: string | null
+          user_id: string
+        }
+        Update: {
+          acknowledged?: boolean
+          created_at?: string
+          id?: string
+          payload?: Json
+          reason?: string
+          severity?: string
+          thread_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "safety_alerts_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "threads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      threads: {
+        Row: {
+          created_at: string
+          id: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          title?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
