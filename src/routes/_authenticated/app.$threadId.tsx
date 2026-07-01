@@ -85,7 +85,7 @@ function ThreadPage() {
 
     let assistantText = "";
     let finalMem = memory ?? {};
-    let safety: AgentEvent extends { safety: infer S } ? S : null = null;
+    let safety: { severity: "warn" | "critical"; reason: string } | null = null;
 
     try {
       for await (const evt of runAgent(text, memory ?? {})) {
