@@ -20,6 +20,12 @@ dist-ssr
 .wrangler/
 .dev.vars
 
+# Environment variables
+.env
+.env.local
+.env.*.local
+deploy/.env.ecs
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
@@ -52,4 +58,15 @@ pip-delete-this-directory.txt
 .mypy_cache/
 .pytest_cache/
 .ruff_cache/
+
+# Database
+*.db
+*.sqlite3
+
+# Docker
+.dockerignore
+
+# Build artifacts
+*.tar.gz
+*.zip
 
