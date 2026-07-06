@@ -25,13 +25,16 @@ An autonomous post-discharge clinical assistant that uses LangGraph agent orches
 
 ## Overview
 
-CareAnchor is a healthcare AI assistant designed to bridge the gap between hospital discharge and home recovery. After a patient is discharged, there is a critical window where complications can arise but clinical oversight is limited. CareAnchor fills this gap by providing continuous, intelligent monitoring through a conversational interface that:
+CareAnchor is a production-ready healthcare AI assistant designed to bridge the gap between hospital discharge and home recovery. After a patient is discharged, there is a critical window where complications can arise but clinical oversight is limited. CareAnchor fills this gap by providing continuous, intelligent monitoring through a conversational interface that:
 
-1. **Extracts clinical data** from patient conversations using Qwen-Plus
-2. **Maintains a persistent clinical profile** (vitals, medications, symptoms, care plan)
-3. **Monitors safety thresholds** in real-time with severity-tiered alerts
-4. **Triggers human-in-the-loop interrupts** when critical conditions are detected
-5. **Notifies clinicians** via webhook when immediate intervention is required
+1. **Extracts clinical data** from patient conversations using **Qwen-Plus** for structured JSON extraction with intelligent forgetting (skips chitchat, preserves clinical signals)
+2. **Maintains a persistent clinical profile** (vitals, medications, symptoms, care plan) across sessions in PostgreSQL
+3. **Monitors safety thresholds** in real-time with severity-tiered alerts (INFO, WARN, CRITICAL) and compound risk scoring
+4. **Triggers human-in-the-loop interrupts** when critical conditions are detected, with state machine tracking (PENDING_ACKNOWLEDGMENT → ACKNOWLEDGED/ESCALATED → RESOLVED)
+5. **Notifies clinicians** via webhook when immediate intervention is required, with rate limiting to prevent alert storms
+6. **Generates context-aware responses** using **Qwen-Max** for high-reasoning clinical safety responses that adapt based on severity tier
+
+**Built for production-readiness**: Backed by over 120 automated tests covering safety constraints, edge cases, state machine transitions, and threshold logic.
 
 ---
 
@@ -116,22 +119,29 @@ CareAnchor provides an always-available clinical companion that:
 
 ## Features
 
-### Clinical Data Extraction
-- Uses Qwen-Plus with structured JSON extraction
-- Intelligent forgetting: skips non-clinical messages (chitchat detection)
-- Extracts vitals, medications, symptoms, and care plan details
+### Clinical Data Extraction (Qwen-Plus)
+- **Structured JSON extraction** via Qwen-Plus with JSON mode for reliable parsing
+- **Intelligent forgetting**: skips non-clinical messages (chitchat detection) to avoid polluting patient profiles
+- Extracts vitals, medications, symptoms, and care plan details from natural conversation
+- Deep merge algorithm preserves historical data while updating new observations
 
 ### Safety Threshold System
-- **Severity Tiers**: INFO, WARN, CRITICAL
+- **Severity Tiers**: INFO, WARN, CRITICAL with configurable thresholds per vital sign
 - **Vital Monitoring**: Systolic/Diastolic BP, Heart Rate, SpO2, Temperature, Respiratory Rate
-- **Keyword Detection**: 11 critical/warn symptom patterns (chest pain, breathing difficulty, suicidal ideation, stroke symptoms, etc.)
-- **Compound Risk Scoring**: Multiple borderline values increase risk score beyond individual thresholds
+- **Keyword Detection**: 11 critical/warn symptom patterns (chest pain, breathing difficulty, suicidal ideation, stroke symptoms, anaphylaxis, overdose, etc.)
+- **Compound Risk Scoring**: Multiple borderline values increase risk score beyond individual thresholds (capped at 10.0)
 
 ### Human-in-the-Loop Interrupts
 - **State Machine**: NORMAL → PENDING_ACKNOWLEDGMENT → ACKNOWLEDGED/ESCALATED → RESOLVED
-- **Rate Limiting**: Configurable cooldown between webhook notifications (default: 5 minutes)
-- **Acknowledgment Tracking**: Records who acknowledged and when
-- **Persistent Audit Trail**: All safety events stored in PostgreSQL
+- **Rate Limiting**: Configurable cooldown between webhook notifications (default: 5 minutes) to prevent alert storms
+- **Acknowledgment Tracking**: Records who acknowledged and when with full audit trail
+- **Persistent Audit Trail**: All safety events stored in PostgreSQL with severity, alerts, and risk score
+
+### Qwen-Max Clinical Response Generation
+- **Severity-aware prompts**: Different system prompts for WARN (monitor + recheck) vs CRITICAL (emergency immediately)
+- **Profile-aware responses**: References patient's clinical profile naturally in conversation
+- **Safety override mode**: Disables routine advice when critical thresholds breached
+- **Token streaming**: Real-time response delivery via WebSocket
 
 ### Real-time Streaming
 - WebSocket connection for token-by-token response delivery
@@ -139,9 +149,9 @@ CareAnchor provides an always-available clinical companion that:
 - Agent state badges in UI (thinking, analyzing, responding)
 
 ### Clinical Memory Viewer
-- Real-time vital signs grid with danger highlighting
-- Medications and symptoms tracking
-- Safety event history with severity indicators
+- Real-time vital signs grid with danger highlighting (yellow for WARN, red for CRITICAL)
+- Medications and symptoms tracking with timeline
+- Safety event history with severity indicators and acknowledgment status
 
 ---
 
@@ -149,9 +159,11 @@ CareAnchor provides an always-available clinical companion that:
 
 ### Backend
 - **Framework**: FastAPI with async/await
-- **Agent Orchestration**: LangGraph (dual compiled graphs)
-- **LLM Provider**: Alibaba Cloud Model Studio (Qwen-Plus for extraction, Qwen-Max for response)
-- **Database**: PostgreSQL with asyncpg
+- **Agent Orchestration**: LangGraph (dual compiled graphs for REST and WebSocket)
+- **LLM Provider**: Alibaba Cloud Model Studio (DashScope)
+  - **Qwen-Plus**: Structured JSON extraction with JSON mode for clinical data parsing
+  - **Qwen-Max**: High-reasoning response generation with severity-aware prompts
+- **Database**: PostgreSQL with asyncpg (clinical profiles, chat logs, safety events)
 - **HTTP Client**: httpx for webhook notifications
 
 ### Frontend
@@ -162,11 +174,11 @@ CareAnchor provides an always-available clinical companion that:
 - **WebSocket**: Custom hook with typed event stream
 
 ### Infrastructure
-- **Containerization**: Docker with multi-stage builds
-- **Orchestration**: Docker Compose
-- **Reverse Proxy**: Nginx
+- **Containerization**: Docker with multi-stage builds (non-root user, healthchecks)
+- **Orchestration**: Docker Compose (api, db, nginx on isolated bridge network)
+- **Reverse Proxy**: Nginx (WebSocket upgrade support, static SPA serving)
 - **Cloud Provider**: Alibaba Cloud ECS
-- **AI Services**: Alibaba Cloud Model Studio (DashScope)
+- **AI Services**: Alibaba Cloud Model Studio (DashScope API)
 
 ---
 
@@ -376,6 +388,8 @@ NORMAL → PENDING_ACKNOWLEDGMENT → ACKNOWLEDGED → RESOLVED
 
 ## Testing
 
+CareAnchor is backed by **122 production-grade automated tests** covering safety constraints, edge cases, and state machine transitions. This test suite ensures the system behaves correctly under all clinical scenarios.
+
 ```bash
 # Run all tests
 python -m pytest backend/tests/ -v
@@ -387,12 +401,23 @@ python -m pytest backend/tests/test_safety.py -v
 python -m pytest backend/tests/ --cov=backend
 ```
 
-**Test Coverage:**
-- Safety module: 40 tests (thresholds, severity tiers, compound risk)
-- Interrupt controller: 35 tests (state machine, rate limiting)
-- Tools: 15 tests (deep merge, safety checks)
-- Graph: 10 tests (routing, orchestration nodes)
-- Clinical responder: 22 tests (prompt generation, model settings)
+**Test Coverage (122 tests):**
+
+| Module | Tests | What's Covered |
+|--------|-------|----------------|
+| `test_safety.py` | 40 | Severity tiers, vital thresholds, compound risk scoring, keyword detection, combined evaluation |
+| `test_interrupt.py` | 35 | State machine transitions, rate limiting, acknowledgment, escalation, resolution |
+| `test_tools.py` | 15 | Deep merge for clinical profiles, safety threshold checking |
+| `test_graph.py` | 10 | Routing logic, orchestration nodes, memory update edge cases |
+| `test_clinical_responder.py` | 22 | Prompt templates (warn vs critical), chat history limiting, model settings |
+
+**Key test scenarios validated:**
+- Critical vital signs trigger immediate interrupt (BP >180, HR <40, SpO2 <90)
+- Warn-level vitals trigger monitoring mode (BP 160-180, HR 50-110, SpO2 90-94)
+- Multiple borderline values compound risk score beyond individual thresholds
+- Suicidal ideation and emergency symptoms trigger CRITICAL severity
+- Interrupt state machine prevents duplicate webhook notifications
+- Rate limiting enforces cooldown between clinician notifications
 
 ---
 
