@@ -48,19 +48,6 @@ function AuthPage() {
     }
   }
 
-  async function google() {
-    setLoading(true);
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: { redirectTo: window.location.origin },
-    });
-    if (error) {
-      toast.error(error.message ?? "Google sign-in failed");
-      setLoading(false);
-      return;
-    }
-  }
-
   return (
     <div className="grid min-h-screen place-items-center bg-background px-4">
       <div className="w-full max-w-md">
@@ -78,15 +65,7 @@ function AuthPage() {
             {mode === "signin" ? "Sign in to continue your recovery tracking." : "Start tracking your post-discharge recovery."}
           </p>
 
-          <Button variant="outline" className="mt-6 w-full" onClick={google} disabled={loading}>
-            Continue with Google
-          </Button>
-
-          <div className="my-6 flex items-center gap-3 text-xs text-muted-foreground">
-            <div className="h-px flex-1 bg-border" /> or <div className="h-px flex-1 bg-border" />
-          </div>
-
-          <form onSubmit={submit} className="space-y-4">
+          <form onSubmit={submit} className="mt-6 space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
