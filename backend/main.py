@@ -11,11 +11,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from backend.api.routes import router as rest_router
 from backend.api.websocket import router as ws_router
 from backend.config import settings
-from backend.db.postgres import ensure_schema
+from backend.db.sqlite import close_db, ensure_schema
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    # Initialize SQLite database
     await ensure_schema()
     # Alibaba Cloud ECS proof — prints verification logs visible in `docker compose logs api`
     if settings.dashscope_api_key:
@@ -23,6 +24,7 @@ async def lifespan(app: FastAPI):
 
         verify_alibaba_cloud_environment()
     yield
+    await close_db()
 
 
 app = FastAPI(

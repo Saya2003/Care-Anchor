@@ -1,149 +1,151 @@
-import { createFileRoute, Link, Outlet, useNavigate, useParams } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Button } from "@/components/ui/button";
-import { Plus, Waves, LogOut, Trash2 } from "lucide-react";
-import { toast } from "sonner";
-import { formatDistanceToNow } from "date-fns";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { ChatPanel } from "@/components/chat-panel";
+import { ClinicalMemoryViewer } from "@/components/clinical-memory-viewer";
+import { useAgentChat, type AgentEvent } from "@/hooks/use-agent-chat";
+import { Waves } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/app")({
-  component: AppShell,
+  component: AppPage,
 });
 
-function AppShell() {
-  const navigate = useNavigate();
-  const qc = useQueryClient();
-  const params = useParams({ strict: false }) as { threadId?: string };
+function AppPage() {
+  const [sessionId] = useState(() => crypto.randomUUID());
+  const { connected, profile, chatHistory, error, send, setProfile, setChatHistory } =
+    useAgentChat({ sessionId });
 
-  const { data: threads } = useQuery({
-    queryKey: ["threads"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("threads")
-        .select("id, title, updated_at")
-        .order("updated_at", { ascending: false });
-      if (error) throw error;
-      return data;
-    },
-  });
+  const [messages, setMessages] = useState<Array<{ id: string; role: "user" | "assistant"; content: string }>>([]);
+  const [pending, setPending] = useState<{ user: string; assistantStream: string } | null>(null);
+  const [agentState, setAgentState] = useState<string | null>(null);
+  const [criticalAlert, setCriticalAlert] = useState<{ reason: string } | null>(null);
+  const [draft, setDraft] = useState("");
 
-  const { data: userMeta } = useQuery({
-    queryKey: ["me"],
-    queryFn: async () => {
-      const { data } = await supabase.auth.getUser();
-      return data.user;
-    },
-  });
+  const inputRef = useRef<HTMLTextAreaElement | null>(null);
+  const scrollRef = useRef<HTMLDivElement | null>(null);
 
-  async function createThread() {
-    const { data: user } = await supabase.auth.getUser();
-    if (!user.user) return;
-    const title = `Check-in · ${new Date().toLocaleDateString(undefined, { month: "short", day: "numeric" })}`;
-    const { data, error } = await supabase
-      .from("threads")
-      .insert({ user_id: user.user.id, title })
-      .select("id")
-      .single();
-    if (error) { toast.error(error.message); return; }
-    await qc.invalidateQueries({ queryKey: ["threads"] });
-    navigate({ to: "/app/$threadId", params: { threadId: data.id } });
-  }
-
-  async function deleteThread(id: string, e: React.MouseEvent) {
-    e.preventDefault(); e.stopPropagation();
-    const { error } = await supabase.from("threads").delete().eq("id", id);
-    if (error) { toast.error(error.message); return; }
-    await qc.invalidateQueries({ queryKey: ["threads"] });
-    if (params.threadId === id) navigate({ to: "/app" });
-  }
-
-  async function signOut() {
-    await qc.cancelQueries();
-    qc.clear();
-    await supabase.auth.signOut();
-    navigate({ to: "/auth", replace: true });
-  }
-
-  // Auto-create first thread on empty state at /app
+  // Load chat history on connect
   useEffect(() => {
-    if (!threads) return;
-    if (!params.threadId && threads.length > 0) {
-      navigate({ to: "/app/$threadId", params: { threadId: threads[0].id }, replace: true });
+    if (chatHistory.length > 0 && messages.length === 0) {
+      setMessages(
+        chatHistory.map((m, i) => ({
+          id: String(i),
+          role: m.role as "user" | "assistant",
+          content: m.content,
+        }))
+      );
     }
-  }, [threads, params.threadId, navigate]);
+  }, [chatHistory]);
+
+  const handleSend = useCallback(
+    (text: string) => {
+      const trimmed = text.trim();
+      if (!trimmed || !connected) return;
+
+      setPending({ user: trimmed, assistantStream: "" });
+      setDraft("");
+      setAgentState("thinking...");
+      send(trimmed);
+    },
+    [connected, send]
+  );
+
+  // Listen to WebSocket messages for streaming
+  useEffect(() => {
+    const ws = new WebSocket(`ws://localhost:8000/ws/chat/${sessionId}`);
+
+    ws.onmessage = (e) => {
+      try {
+        const event = JSON.parse(e.data) as AgentEvent;
+
+        switch (event.type) {
+          case "node_start":
+            setAgentState(event.node === "respond" ? "responding..." : `processing ${event.node}...`);
+            break;
+          case "node_end":
+            setAgentState(null);
+            break;
+          case "safety_result":
+            if (event.interrupt_triggered) {
+              setCriticalAlert({ reason: event.safety_check.alerts.join(", ") });
+            }
+            break;
+          case "token":
+            setPending((prev) =>
+              prev ? { ...prev, assistantStream: prev.assistantStream + event.content } : prev
+            );
+            break;
+          case "done":
+            setMessages((prev) => [
+              ...prev,
+              { id: Date.now().toString() + "-user", role: "user", content: pending?.user ?? "" },
+              { id: Date.now().toString() + "-assistant", role: "assistant", content: event.data.response },
+            ]);
+            setPending(null);
+            setAgentState(null);
+            if (event.data.extracted_clinical_data) {
+              setProfile((prev) => ({ ...prev, ...event.data.extracted_clinical_data }));
+            }
+            break;
+        }
+      } catch {
+        // ignore
+      }
+    };
+
+    return () => ws.close();
+  }, [sessionId, pending, setProfile]);
 
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-background">
-      {/* Sidebar */}
-      <aside className="flex w-72 flex-col border-r border-border/60 bg-card/40">
-        <div className="flex items-center justify-between px-4 py-4">
-          <Link to="/" className="flex items-center gap-2">
-            <div className="grid h-8 w-8 place-items-center rounded-lg bg-primary text-primary-foreground">
-              <Waves className="h-4 w-4" />
-            </div>
-            <span className="font-semibold tracking-tight">CareAnchor</span>
+    <div className="flex h-screen bg-background">
+      {/* Header */}
+      <header className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between border-b border-border/60 bg-background/80 px-6 py-3 backdrop-blur">
+        <div className="flex items-center gap-2">
+          <div className="grid h-8 w-8 place-items-center rounded-lg bg-primary text-primary-foreground">
+            <Waves className="h-4 w-4" />
+          </div>
+          <span className="font-semibold tracking-tight">CareAnchor</span>
+          <span className="ml-2 text-xs text-muted-foreground">
+            Session: {sessionId.slice(0, 8)}...
+          </span>
+        </div>
+        <div className="flex items-center gap-3">
+          {connected ? (
+            <span className="flex items-center gap-1.5 text-xs text-green-600">
+              <span className="h-2 w-2 rounded-full bg-green-600" />
+              Connected
+            </span>
+          ) : (
+            <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <span className="h-2 w-2 rounded-full bg-muted-foreground" />
+              Disconnected
+            </span>
+          )}
+          <Link to="/auth" className="text-sm text-muted-foreground hover:text-foreground">
+            Sign out
           </Link>
         </div>
-        <div className="px-3">
-          <Button className="w-full justify-start gap-2" onClick={createThread}>
-            <Plus className="h-4 w-4" /> New check-in
-          </Button>
-        </div>
-        <div className="mt-4 flex-1 overflow-y-auto px-2">
-          <div className="px-2 py-1 text-xs font-medium text-muted-foreground">Recent</div>
-          <ul className="mt-1 space-y-0.5">
-            {threads?.map((t) => {
-              const active = params.threadId === t.id;
-              return (
-                <li key={t.id}>
-                  <div
-                    className={`group flex items-center justify-between rounded-md px-2 py-2 text-sm ${active ? "bg-accent text-accent-foreground" : "hover:bg-accent/50"}`}
-                  >
-                    <Link
-                      to="/app/$threadId"
-                      params={{ threadId: t.id }}
-                      className="flex-1 truncate"
-                    >
-                      <div className="truncate font-medium">{t.title}</div>
-                      <div className="truncate text-xs text-muted-foreground">
-                        {formatDistanceToNow(new Date(t.updated_at), { addSuffix: true })}
-                      </div>
-                    </Link>
-                    <button
-                      onClick={(e) => deleteThread(t.id, e)}
-                      className="ml-2 opacity-0 transition group-hover:opacity-100"
-                      aria-label="Delete thread"
-                    >
-                      <Trash2 className="h-3.5 w-3.5 text-muted-foreground hover:text-destructive" />
-                    </button>
-                  </div>
-                </li>
-              );
-            })}
-            {threads && threads.length === 0 && (
-              <li className="px-2 py-6 text-center text-sm text-muted-foreground">
-                No check-ins yet. Start one above.
-              </li>
-            )}
-          </ul>
-        </div>
-        <div className="border-t border-border/60 p-3">
-          <div className="flex items-center justify-between gap-2">
-            <div className="min-w-0">
-              <div className="truncate text-sm font-medium">{userMeta?.email ?? "Patient"}</div>
-              <div className="text-xs text-muted-foreground">Signed in</div>
-            </div>
-            <Button variant="ghost" size="icon" onClick={signOut} aria-label="Sign out">
-              <LogOut className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-      </aside>
+      </header>
 
-      <main className="flex-1 overflow-hidden">
-        <Outlet />
-      </main>
+      {/* Main content */}
+      <div className="flex w-full pt-14">
+        <div className="flex-1 overflow-hidden">
+          <ChatPanel
+            messages={messages}
+            pending={pending}
+            agentState={agentState}
+            busy={!connected}
+            criticalAlert={criticalAlert}
+            inputRef={inputRef}
+            scrollRef={scrollRef}
+            onSend={handleSend}
+            onDraftChange={setDraft}
+            draft={draft}
+          />
+        </div>
+        <aside className="hidden w-80 border-l border-border/60 lg:block">
+          <ClinicalMemoryViewer profile={profile} alerts={[]} />
+        </aside>
+      </div>
     </div>
   );
 }

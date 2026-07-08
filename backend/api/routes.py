@@ -7,7 +7,7 @@ from fastapi import APIRouter
 from backend.agents.graph import full_graph_executor
 from backend.api.models import ChatRequest, ChatResponse, SessionResponse
 from backend.core.memory_store import memory_store
-from backend.db.postgres import ensure_schema
+from backend.db.sqlite import ensure_schema
 
 router = APIRouter(prefix="/api")
 
