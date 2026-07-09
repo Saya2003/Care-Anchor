@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { Waves, Loader2, CheckCircle, Mail } from "lucide-react";
 
 export const Route = createFileRoute("/auth")({
+  ssr: false,
   component: AuthPage,
 });
 
