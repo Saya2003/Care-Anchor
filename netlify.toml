@@ -1,0 +1,75 @@
+[build]
+  # Frontend build configuration
+  command = "npm run build"
+  publish = "dist"
+  
+  # Environment variables for build process
+  environment = { NODE_VERSION = "18" }
+
+[build.processing]
+  skip_processing = false
+
+[build.processing.css]
+  bundle = true
+  minify = true
+
+[build.processing.js]
+  bundle = true
+  minify = true
+
+[build.processing.html]
+  pretty_urls = true
+
+# Netlify Functions configuration for Python backend
+[functions]
+  directory = "netlify/functions"
+  
+# SPA routing - redirect all routes to index.html for frontend routing
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/api/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/ws/*"
+  to = "/.netlify/functions/websocket/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# Headers for security and CORS
+[[headers]]
+  for = "/api/*"
+  [headers.values]
+    Access-Control-Allow-Origin = "*"
+    Access-Control-Allow-Methods = "GET, POST, PUT, DELETE, OPTIONS"
+    Access-Control-Allow-Headers = "Content-Type, Authorization"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-XSS-Protection = "1; mode=block"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+# Environment context for different deployment stages
+[context.production.environment]
+  NODE_ENV = "production"
+  VITE_API_WS_URL = "wss://your-app.netlify.app"
+
+[context.deploy-preview.environment]
+  NODE_ENV = "development"
+  VITE_API_WS_URL = "wss://deploy-preview-$DEPLOY_PRIME_NUMBER--your-app.netlify.app"
+
+[context.branch-deploy.environment]
+  NODE_ENV = "development"
+  VITE_API_WS_URL = "wss://$BRANCH--your-app.netlify.app"
+
+# Edge functions for WebSocket support (if needed)
+[[edge_functions]]
+  function = "websocket"
+  path = "/ws/*"

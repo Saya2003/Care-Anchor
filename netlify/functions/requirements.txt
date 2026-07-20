@@ -1,0 +1,32 @@
+# Netlify Functions Python requirements
+# Core FastAPI dependencies
+fastapi==0.104.1
+uvicorn==0.24.0
+pydantic==2.5.0
+
+# Database
+aiosqlite==0.19.0
+
+# AI/ML
+openai==1.3.0
+langchain==0.1.0
+langchain-core==0.1.0
+langgraph==0.0.20
+
+# PDF generation
+reportlab==4.0.7
+
+# HTTP and WebSocket
+httpx==0.25.2
+websockets==12.0
+
+# Authentication
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+
+# Utilities
+python-multipart==0.0.6
+python-dotenv==1.0.0
+
+# Mangum for ASGI to AWS Lambda/Netlify adapter
+mangum==0.17.0

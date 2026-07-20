@@ -69,6 +69,10 @@ pip-delete-this-directory.txt
 *.db
 *.sqlite3
 
+# Netlify
+.netlify/
+netlify-debug.log
+
 # Docker
 .dockerignore
 
