@@ -38,7 +38,7 @@ Rules:
 
 async def refine(session_context: str, user_message: str) -> dict:
     result = await structured_extract(
-        model=settings.qwen_plus_model,
+        model=settings.extraction_model,
         system_prompt=EXTRACTION_PROMPT,
         user_content=(
             f"## Existing Profile\n{session_context}\n\n"

@@ -1,0 +1,45 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "backend/main.py",
+      "use": "@vercel/python"
+    },
+    {
+      "src": "package.json",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/backend/main.py"
+    },
+    {
+      "src": "/ws/(.*)",
+      "dest": "/backend/main.py"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/$1"
+    }
+  ],
+  "env": {
+    "DASHSCOPE_API_KEY": "@dashscope-api-key",
+    "SUPABASE_PROJECT_ID": "@supabase-project-id",
+    "SUPABASE_PUBLISHABLE_KEY": "@supabase-publishable-key",
+    "SUPABASE_URL": "@supabase-url",
+    "CORS_ORIGINS": "https://*.vercel.app"
+  },
+  "functions": {
+    "backend/main.py": {
+      "maxDuration": 30
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "/backend/main.py"
+    }
+  ]
+}

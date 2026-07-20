@@ -33,7 +33,10 @@ class MemoryStore:
         row = await cursor.fetchone()
         if row:
             return ClinicalProfile(json.loads(row["profile"]))
-        return ClinicalProfile.new(session_id)
+        # Create new profile and save it to the database
+        new_profile = ClinicalProfile.new(session_id)
+        await self.save_profile(session_id, new_profile)
+        return new_profile
 
     async def save_profile(self, session_id: UUID, profile: ClinicalProfile) -> None:
         db = await get_db()

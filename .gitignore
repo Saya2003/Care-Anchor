@@ -26,6 +26,12 @@ dist-ssr
 .env.*.local
 deploy/.env.ecs
 
+# Documentation files with API keys (protect from accidental commits)
+AI_MODEL_CONFIGURATION.md
+BACKEND_SETUP.md
+MODEL_SWITCH_SUMMARY.md
+QUICK_START_GUIDE.md
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

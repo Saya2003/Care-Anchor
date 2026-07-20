@@ -4,6 +4,12 @@ import os
 from dataclasses import dataclass, field
 from pathlib import Path
 
+# Load environment variables from .env file
+from dotenv import load_dotenv
+
+# Load .env from the project root
+load_dotenv()
+
 
 @dataclass(frozen=True)
 class Settings:
@@ -14,7 +20,15 @@ class Settings:
         default_factory=lambda: os.getenv("CORS_ORIGINS", "http://localhost:5173").split(",")
     )
 
-    # Qwen Cloud (Alibaba Cloud Model Studio)
+    # OpenRouter / AI Model Configuration
+    openrouter_api_key: str = os.getenv("OPENROUTER_API_KEY", "")
+    openrouter_base_url: str = os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1")
+    
+    # Model configuration (can be overridden for different providers)
+    extraction_model: str = os.getenv("EXTRACTION_MODEL", "deepseek/deepseek-v4-flash")
+    response_model: str = os.getenv("RESPONSE_MODEL", "deepseek/deepseek-v4-flash")
+    
+    # Legacy Qwen Cloud settings (kept for backwards compatibility)
     dashscope_api_key: str = os.getenv("DASHSCOPE_API_KEY") or os.getenv("QWEN_API_KEY", "")
     qwen_plus_model: str = os.getenv("QWEN_PLUS_MODEL", "qwen-plus")
     qwen_max_model: str = os.getenv("QWEN_MAX_MODEL", "qwen-max")

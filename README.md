@@ -237,8 +237,56 @@ care-companion-ai/
 
 - Python 3.12+
 - Node.js 18+
-- PostgreSQL 16+
+- PostgreSQL 16+ (or SQLite for development)
 - Alibaba Cloud Model Studio API key
+
+### Quick Start (Development)
+
+**1. Start the Backend**
+
+```bash
+# Option A: Using the helper script (recommended)
+# On Windows:
+start-backend.bat
+
+# On Mac/Linux:
+./start-backend.sh
+
+# Option B: Manual start
+cd backend
+pip install -r requirements.txt
+uvicorn main:app --reload --port 8000
+```
+
+The backend will be available at `http://localhost:8000`. You should see:
+```
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+INFO:     Application startup complete.
+```
+
+Verify it's working: http://localhost:8000/health
+
+**2. Start the Frontend**
+
+```bash
+# In a new terminal
+npm install
+npm run dev
+```
+
+The frontend will be available at `http://localhost:5173`.
+
+**3. Sign In and Chat**
+
+- Navigate to http://localhost:5173
+- Create an account or sign in
+- You'll land on the dashboard with quick action cards
+- Click "Open Chat" to start conversing with CareAnchor
+- The chat input will be enabled once the backend is connected
+
+> **Note:** If you see a "Disconnected" warning in the chat, make sure the backend is running on port 8000.
+
+For detailed backend setup instructions, see [BACKEND_SETUP.md](./BACKEND_SETUP.md).
 
 ### Backend Setup
 
@@ -299,7 +347,47 @@ The frontend will be available at `http://localhost:5173`.
 
 ## Deployment
 
-### Docker Compose (Local/Production)
+### Quick Deploy to Alibaba Cloud ECS (Hackathon)
+
+For hackathon submission, we provide a **one-command deployment script** that handles everything automatically:
+
+```bash
+# 1. Create an Alibaba Cloud ECS instance (Ubuntu 22.04)
+#    - Instance type: ecs.c6.large or free tier
+#    - Enable public IP
+#    - Open ports: 80, 443, 22
+
+# 2. SSH into your ECS instance
+ssh root@YOUR_ECS_PUBLIC_IP
+
+# 3. Clone and configure
+git clone https://github.com/Saya2003/Care-Anchor.git
+cd Care-Anchor
+
+# 4. Set up environment
+cp deploy/.env.ecs.template .env
+nano .env  # Add your DashScope API key and ECS IP
+
+# 5. Run one-command deployment (installs everything automatically)
+chmod +x deploy/quick-deploy.sh
+./deploy/quick-deploy.sh
+
+# The script automatically:
+# ✓ Installs Docker, Docker Compose, and Node.js
+# ✓ Builds the frontend (npm run build)
+# ✓ Starts PostgreSQL, FastAPI, and Nginx with Docker Compose
+# ✓ Runs health checks
+# ✓ Shows you the access URLs
+
+# 6. Access your application
+# Web:      http://YOUR_ECS_PUBLIC_IP
+# Health:   http://YOUR_ECS_PUBLIC_IP/health
+# Alibaba:  http://YOUR_ECS_PUBLIC_IP/alibaba/runtime
+```
+
+**For detailed step-by-step instructions**, see [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md)
+
+### Local Development with Docker Compose
 
 ```bash
 # Build and start all services
@@ -312,14 +400,14 @@ docker-compose logs -f api
 docker-compose down
 ```
 
-### Alibaba Cloud ECS
+### Manual ECS Setup (Advanced)
 
 ```bash
 # On your ECS instance
 chmod +x deploy/ecs-setup.sh
 ./deploy/ecs-setup.sh
 
-# Verify deployment
+# Verify Alibaba Cloud connectivity
 chmod +x deploy/verify-alibaba.sh
 ./deploy/verify-alibaba.sh
 ```

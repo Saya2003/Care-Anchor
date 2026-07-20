@@ -71,7 +71,7 @@ async def generate_response(
     messages.append({"role": "user", "content": user_message})
 
     async for token in stream_chat(
-        model=settings.qwen_max_model,
+        model=settings.response_model,
         messages=messages,
         temperature=0.7,
         max_tokens=2048,

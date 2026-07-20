@@ -9,7 +9,11 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from backend.api.routes import router as rest_router
+from backend.api.sessions import router as sessions_router
 from backend.api.websocket import router as ws_router
+from backend.api.profile import router as profile_router
+from backend.api.analytics import router as analytics_router
+from backend.api.predictions import router as predictions_router
 from backend.config import settings
 from backend.db.sqlite import close_db, ensure_schema
 
@@ -42,7 +46,11 @@ app.add_middleware(
 )
 
 app.include_router(rest_router)
+app.include_router(sessions_router)
 app.include_router(ws_router)
+app.include_router(profile_router)
+app.include_router(analytics_router)
+app.include_router(predictions_router)
 
 
 @app.get("/health")

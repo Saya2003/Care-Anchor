@@ -3,7 +3,14 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { MessageBubble } from "@/components/message-bubble";
-import { Send, ShieldAlert } from "lucide-react";
+import { Send, ShieldAlert, Paperclip, X, FileText, Image as ImageIcon, Mic, MicOff, Volume2, VolumeX, Activity } from "lucide-react";
+
+export type AttachedFile = {
+  name: string;
+  type: string;
+  size: number;
+  dataUrl: string;
+};
 
 type Msg = {
   id: string;
@@ -24,9 +31,10 @@ type Props = {
   criticalAlert: { reason: string } | null;
   inputRef: RefObject<HTMLTextAreaElement | null>;
   scrollRef: RefObject<HTMLDivElement | null>;
-  onSend: (text: string) => void;
+  onSend: (text: string, files?: AttachedFile[]) => void;
   onDraftChange: (text: string) => void;
   draft: string;
+  connected?: boolean;
 };
 
 export function ChatPanel({
@@ -40,7 +48,11 @@ export function ChatPanel({
   onSend,
   onDraftChange,
   draft,
+  connected = true,
 }: Props) {
+  const [attachedFiles, setAttachedFiles] = useState<AttachedFile[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   useEffect(() => {
     inputRef.current?.focus();
   }, [inputRef]);
@@ -55,8 +67,72 @@ export function ChatPanel({
   function handleKeyDown(e: React.KeyboardEvent) {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      onSend(draft);
+      handleSendClick();
     }
+  }
+
+  function handleSendClick() {
+    if (!draft.trim() && attachedFiles.length === 0) return;
+    onSend(draft, attachedFiles);
+    setAttachedFiles([]);
+  }
+
+  async function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    const newFiles: AttachedFile[] = [];
+    
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      
+      // Check file type
+      const isImage = file.type.startsWith('image/');
+      const isDocument = file.type === 'application/pdf' || 
+                        file.type === 'application/msword' ||
+                        file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
+                        file.type === 'text/plain';
+      
+      if (!isImage && !isDocument) {
+        alert(`File type not supported: ${file.name}`);
+        continue;
+      }
+
+      // Check file size (max 10MB)
+      if (file.size > 10 * 1024 * 1024) {
+        alert(`File too large: ${file.name} (max 10MB)`);
+        continue;
+      }
+
+      // Convert to base64
+      const dataUrl = await new Promise<string>((resolve) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.readAsDataURL(file);
+      });
+
+      newFiles.push({
+        name: file.name,
+        type: file.type,
+        size: file.size,
+        dataUrl,
+      });
+    }
+
+    setAttachedFiles((prev) => [...prev, ...newFiles]);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  }
+
+  function removeFile(index: number) {
+    setAttachedFiles((prev) => prev.filter((_, i) => i !== index));
+  }
+
+  function formatFileSize(bytes: number): string {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
   }
 
   return (
@@ -89,6 +165,16 @@ export function ChatPanel({
         </div>
       )}
 
+      {!connected && (
+        <div className="border-b border-orange-500/30 bg-orange-500/10 px-6 py-3 text-sm">
+          <div className="flex items-center gap-2 text-orange-700 dark:text-orange-400">
+            <ShieldAlert className="h-4 w-4" />
+            <span className="font-medium">Disconnected:</span>
+            <span>Make sure the backend server is running at localhost:8000</span>
+          </div>
+        </div>
+      )}
+
       <div ref={scrollRef} className="flex-1 overflow-y-auto px-6 py-6">
         <div className="mx-auto max-w-3xl space-y-6">
           {messages.length === 0 && !pending && (
@@ -114,27 +200,73 @@ export function ChatPanel({
       </div>
 
       <div className="border-t border-border/60 bg-card/40 px-6 py-4">
-        <div className="mx-auto flex max-w-3xl items-end gap-2">
-          <Textarea
-            ref={inputRef}
-            value={draft}
-            onChange={(e) => onDraftChange(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder="How are you feeling? Pain level, meds, vitals \u2014 anything."
-            className="min-h-[52px] max-h-40 resize-none"
-            disabled={busy}
-          />
-          <Button
-            onClick={() => onSend(draft)}
-            disabled={busy || !draft.trim()}
-            className="h-[52px] px-4"
-          >
-            <Send className="h-4 w-4" />
-          </Button>
+        <div className="mx-auto max-w-3xl">
+          {attachedFiles.length > 0 && (
+            <div className="mb-3 flex flex-wrap gap-2">
+              {attachedFiles.map((file, idx) => (
+                <div
+                  key={idx}
+                  className="flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-2 text-sm"
+                >
+                  {file.type.startsWith('image/') ? (
+                    <ImageIcon className="h-4 w-4 text-primary" />
+                  ) : (
+                    <FileText className="h-4 w-4 text-primary" />
+                  )}
+                  <span className="max-w-[200px] truncate">{file.name}</span>
+                  <span className="text-xs text-muted-foreground">
+                    {formatFileSize(file.size)}
+                  </span>
+                  <button
+                    onClick={() => removeFile(idx)}
+                    className="ml-1 rounded-full p-0.5 hover:bg-destructive/10"
+                    disabled={busy}
+                  >
+                    <X className="h-3 w-3 text-destructive" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+          <div className="flex items-end gap-2">
+            <input
+              ref={fileInputRef}
+              type="file"
+              multiple
+              accept="image/*,.pdf,.doc,.docx,.txt"
+              onChange={handleFileSelect}
+              className="hidden"
+            />
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={busy}
+              className="h-[52px] w-[52px] shrink-0"
+            >
+              <Paperclip className="h-4 w-4" />
+            </Button>
+            <Textarea
+              ref={inputRef}
+              value={draft}
+              onChange={(e) => onDraftChange(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder="How are you feeling? Pain level, meds, vitals \u2014 anything."
+              className="min-h-[52px] max-h-40 resize-none"
+              disabled={busy}
+            />
+            <Button
+              onClick={handleSendClick}
+              disabled={busy || (!draft.trim() && attachedFiles.length === 0)}
+              className="h-[52px] px-4 shrink-0"
+            >
+              <Send className="h-4 w-4" />
+            </Button>
+          </div>
+          <p className="mt-2 text-center text-xs text-muted-foreground">
+            Research prototype \u2014 not a substitute for medical care.
+          </p>
         </div>
-        <p className="mx-auto mt-2 max-w-3xl text-center text-xs text-muted-foreground">
-          Research prototype \u2014 not a substitute for medical care.
-        </p>
       </div>
     </section>
   );

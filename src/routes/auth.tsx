@@ -30,7 +30,7 @@ function AuthPage() {
           email,
           password,
           options: {
-            emailRedirectTo: window.location.origin + "/_authenticated/app",
+            emailRedirectTo: window.location.origin + "/dashboard",
           },
         });
 
@@ -58,7 +58,7 @@ function AuthPage() {
         }
 
         toast.success("Welcome back!");
-        navigate({ to: "/_authenticated/app" });
+        navigate({ to: "/dashboard" });
       }
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Something went wrong");
