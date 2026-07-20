@@ -122,6 +122,11 @@ Once deployed, your API will be available at:
 - Vite requires Node.js 20.19+ or 22.12+ (Netlify default is 18.x)
 - Check build logs for Node.js version errors
 
+**Python Version Configuration Issues**
+- Ensure no conflicting `runtime.txt` file exists (delete if it contains Node.js version)
+- Use `python-runtime.txt` for Python serverless functions (should contain "3.11")
+- Remove any `.tool-versions`, `.python-version`, or `mise.toml` files with invalid versions
+
 **Common Build Solutions**
 ```bash
 # Clear build cache in Netlify Dashboard
