@@ -116,19 +116,42 @@ Once deployed, your API will be available at:
 ### 🔍 Troubleshooting
 
 #### Build Failures
-- Check build logs in Netlify Dashboard
-- Verify all environment variables are set
-- Ensure Node.js version compatibility (18+)
+
+**Node.js Version Issues**
+- Ensure Node.js 20.19+ is specified in `.nvmrc` and `netlify.toml`
+- Vite requires Node.js 20.19+ or 22.12+ (Netlify default is 18.x)
+- Check build logs for Node.js version errors
+
+**Common Build Solutions**
+```bash
+# Clear build cache in Netlify Dashboard
+Settings → Build & Deploy → Post processing → Clear cache
+
+# Or add to netlify.toml
+[build]
+  command = "npm ci && npm run build"
+  environment = { NODE_VERSION = "20.19.0" }
+```
+
+**Environment Variable Issues**
+- Check all required variables are set in Netlify Dashboard
+- Verify API key formats (DashScope: sk-ws-*, OpenRouter: sk-or-v1-*)
+- Ensure VITE_ prefixed variables are available during build
 
 #### Function Errors
-- Check Function logs in Netlify Dashboard
+- Check Function logs in Netlify Dashboard → Functions
 - Verify Python dependencies in `netlify/functions/requirements.txt`
-- Test API endpoints individually
+- Test API endpoints individually: `https://your-app.netlify.app/api/health`
 
 #### WebSocket Issues
-- Ensure `VITE_API_WS_URL` uses `wss://` protocol
-- Check browser console for connection errors
-- Verify CORS configuration
+- Ensure `VITE_API_WS_URL` uses `wss://` protocol for production
+- Check browser console for WebSocket connection errors
+- Verify CORS configuration in netlify.toml
+
+#### API Integration Issues
+- Test DashScope API key: `curl -H "Authorization: Bearer YOUR_KEY" https://dashscope.aliyuncs.com/api/v1/services/aigc/text-generation/generation`
+- Verify Supabase connection in browser network tab
+- Check if rate limits are being hit
 
 #### Common Solutions
 ```bash
