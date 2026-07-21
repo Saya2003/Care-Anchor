@@ -108,8 +108,8 @@ async def alibaba_runtime_trace():
             "dashscope_endpoint": settings.dashscope_base_url,
             "dashscope_reachable": dashscope_ok,
             "dashscope_latency_ms": dashscope_latency_ms,
-            "model_plus": settings.qwen_plus_model,
-            "model_max": settings.qwen_max_model,
+            "model_extraction": settings.extraction_model,
+            "model_response": settings.response_model,
             "ecs_metadata": ecs_meta if ecs_meta else None,
         },
         "config": {

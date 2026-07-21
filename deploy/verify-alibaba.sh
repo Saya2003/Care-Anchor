@@ -68,10 +68,10 @@ if [ -f "$PROJECT_DIR/.env" ]; then
   set +a
 fi
 
-if [ -z "${DASHSCOPE_API_KEY:-}" ] && [ -z "${QWEN_API_KEY:-}" ]; then
-  fail "DASHSCOPE_API_KEY / QWEN_API_KEY is not set"
+if [ -z "${OPENROUTER_API_KEY:-}" ]; then
+  fail "OPENROUTER_API_KEY is not set"
 else
-  API_KEY="${DASHSCOPE_API_KEY:-${QWEN_API_KEY:-}}"
+  API_KEY="${OPENROUTER_API_KEY:-}"
   KEY_PREFIX="${API_KEY:0:8}"
   MASKED="${KEY_PREFIX}****"
   pass "Alibaba Cloud API key is configured ($MASKED)"

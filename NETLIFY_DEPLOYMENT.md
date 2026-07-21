@@ -36,11 +36,15 @@ VITE_SUPABASE_PROJECT_ID=your_project_id
 VITE_SUPABASE_PUBLISHABLE_KEY=your_publishable_key
 VITE_SUPABASE_URL=https://your_project_id.supabase.co
 
-# AI Configuration
+# AI Configuration - Codex and GPT-5.6
+OPENROUTER_API_KEY=your_openrouter_key
+EXTRACTION_MODEL=openai/codex
+RESPONSE_MODEL=openai/gpt-5.6
+CODEX_MODEL=openai/codex
+GPT_5_6_MODEL=openai/gpt-5.6
+
+# Optional: DashScope for image analysis
 DASHSCOPE_API_KEY=your_dashscope_api_key
-OPENROUTER_API_KEY=your_backup_openrouter_key
-QWEN_PLUS_MODEL=qwen2.5-max
-QWEN_MAX_MODEL=qwen2.5-turbo
 
 # Application Settings
 CORS_ORIGINS=https://*.netlify.app
@@ -105,7 +109,7 @@ Once deployed, your API will be available at:
 
 ### ⚡ Features Available
 
-✅ **AI Health Assistant**: Qwen 2.5 models via DashScope  
+✅ **AI Health Assistant**: Codex and GPT-5.6 models via OpenRouter  
 ✅ **Voice Interaction**: Browser-based speech recognition  
 ✅ **Real-time Analytics**: Health monitoring dashboard  
 ✅ **Predictive Insights**: AI-powered risk assessment  
@@ -215,4 +219,4 @@ For deployment issues:
 
 ---
 
-**🏆 Hackathon Ready**: This configuration meets all technical requirements for AI hackathon submissions with comprehensive health monitoring capabilities and Alibaba Cloud Qwen integration.
+**🏆 Hackathon Ready**: This configuration meets all technical requirements for AI hackathon submissions with comprehensive health monitoring capabilities and advanced AI model integration.

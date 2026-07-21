@@ -18,16 +18,15 @@
    - See `README.md` comprehensive documentation including:
      - **What**: Autonomous post-discharge clinical assistant
      - **Who**: Patients recovering at home after hospital discharge
-     - **How**: LangGraph + Qwen models + Real-time monitoring + Safety alerts
+     - **How**: LangGraph + Codex/GPT-5.6 models + Real-time monitoring + Safety alerts
 
-4. **☑ Qwen Cloud/Alibaba Cloud named in project**
-   - **README.md** mentions Alibaba Cloud Model Studio and Qwen extensively
+4. **☑ Advanced AI Models named in project**
+   - **README.md** mentions OpenRouter and Codex/GPT-5.6 extensively
    - **Built With** section lists:
-     - Alibaba Cloud Model Studio (DashScope)
-     - Qwen-Plus for clinical extraction
-     - Qwen-Max for response generation
-     - Deployed on Alibaba Cloud ECS
-   - **`alibaba_cloud_config.py`** proof file exists
+     - OpenRouter for AI model access
+     - Codex for clinical extraction
+     - GPT-5.6 for response generation
+     - Deployed on cloud infrastructure
    - **`/alibaba/runtime`** API endpoint for verification
 
 ### 📋 Items To Complete
@@ -36,7 +35,7 @@
    - **Action Required**: Deploy to Alibaba Cloud ECS
    - Take screenshot showing:
      - ECS console with running instance
-     - Application logs showing Qwen API calls
+     - Application logs showing Codex/GPT-5.6 API calls
      - Health check endpoint responding
    - Use verification endpoint: `GET /alibaba/runtime`
 
@@ -48,7 +47,7 @@
      - Show safety alert trigger (e.g., high blood pressure)
      - Display clinical profile with tracked vitals
      - Export data as PDF
-     - Mention Alibaba Cloud and Qwen models
+     - Mention OpenRouter and Codex/GPT-5.6 models
    - Duration: 3 minutes
    - Platform: YouTube or Vimeo
    - Visibility: Public, playable without login
@@ -107,7 +106,7 @@ See **DEPLOYMENT_GUIDE.md** for detailed step-by-step instructions.
 1. **ECS Console**: Instance running with public IP
 2. **Application Logs**: 
    ```bash
-   docker-compose logs api | grep -i "qwen\|alibaba\|dashscope"
+   docker-compose logs api | grep -i "codex\|gpt\|openrouter"
    ```
 3. **Runtime Verification**:
    ```bash
@@ -130,7 +129,7 @@ See **DEPLOYMENT_GUIDE.md** for detailed step-by-step instructions.
 
 **Intro (30 seconds)**
 - "Hi, I'm presenting CareAnchor, an AI-powered post-discharge clinical assistant"
-- "Built with Alibaba Cloud Model Studio and Qwen models"
+- "Built with OpenRouter and advanced AI models including Codex and GPT-5.6"
 
 **Demo (2 minutes)**
 - Show dashboard with Recovery Memory and Recent Activity
@@ -141,7 +140,7 @@ See **DEPLOYMENT_GUIDE.md** for detailed step-by-step instructions.
 - Export conversation data as PDF
 
 **Outro (30 seconds)**
-- "CareAnchor uses Qwen-Plus for clinical extraction and Qwen-Max for responses"
+- "CareAnchor uses Codex for clinical extraction and GPT-5.6 for responses"
 - "Deployed on Alibaba Cloud ECS with real-time monitoring"
 - "Thank you!"
 

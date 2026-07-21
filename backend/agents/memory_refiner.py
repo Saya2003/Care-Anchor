@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from backend.config import settings
-from backend.core.qwen_client import structured_extract
+from backend.core.ai_client import structured_extract
 
 EXTRACTION_PROMPT = """You are a clinical data extraction specialist. Extract structured clinical information from the patient's message.
 

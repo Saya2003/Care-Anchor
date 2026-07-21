@@ -2,7 +2,7 @@
 
 ## System Overview
 
-CareAnchor is a production-ready healthcare AI assistant built on Alibaba Cloud infrastructure, using Qwen models for clinical intelligence and LangGraph for agent orchestration.
+CareAnchor is a production-ready healthcare AI assistant built on modern cloud infrastructure, using Codex and GPT-5.6 models for clinical intelligence and LangGraph for agent orchestration.
 
 ## High-Level Architecture
 
@@ -32,18 +32,18 @@ CareAnchor is a production-ready healthcare AI assistant built on Alibaba Cloud 
 │  │              LangGraph Agent Orchestration               │    │
 │  │  ┌─────────┐  ┌─────────┐  ┌─────────┐  ┌──────────┐  │    │
 │  │  │Extract  │→ │ Memory  │→ │ Safety  │→ │ Respond  │  │    │
-│  │  │Clinical │  │ Update  │  │ Check   │  │ (Qwen-   │  │    │
-│  │  │Data     │  │         │  │         │  │  Max)    │  │    │
-│  │  │(Qwen+)  │  │         │  │         │  │          │  │    │
+│  │  │Clinical │  │ Update  │  │ Check   │  │ (GPT-    │  │    │
+│  │  │Data     │  │         │  │         │  │  5.6)    │  │    │
+│  │  │(Codex)  │  │         │  │         │  │          │  │    │
 │  │  └─────────┘  └─────────┘  └─────────┘  └──────────┘  │    │
 │  └─────────────────────────────────────────────────────────┘    │
 │         │                 │                                      │
 │         ▼                 ▼                                      │
 │  ┌──────────────┐  ┌──────────────┐  ┌─────────────────────┐   │
 │  │ Alibaba      │  │  SQLite/     │  │  Interrupt Controller│   │
-│  │ Cloud Model  │  │  PostgreSQL  │  │  (State Machine)     │   │
-│  │ Studio       │  │  (Clinical   │  │                      │   │
-│  │ (Qwen)       │  │   Profiles)  │  │                      │   │
+│  │ OpenRouter   │  │  PostgreSQL  │  │  (State Machine)     │   │
+│  │ (Codex/      │  │  (Clinical   │  │                      │   │
+│  │  GPT-5.6)    │  │   Profiles)  │  │                      │   │
 │  └──────────────┘  └──────────────┘  └─────────────────────┘   │
 └─────────────────────────────────────────────────────────────────┘
                               │
@@ -64,7 +64,7 @@ CareAnchor is a production-ready healthcare AI assistant built on Alibaba Cloud 
 - User sends message via WebSocket
 - Backend receives and creates session context
 
-### 2. Clinical Data Extraction (Qwen-Plus)
+### 2. Clinical Data Extraction (Codex)
 - Natural language → structured JSON
 - Extracts: vitals, medications, symptoms, care plans
 - Intelligent forgetting: skips chitchat
@@ -80,7 +80,7 @@ CareAnchor is a production-ready healthcare AI assistant built on Alibaba Cloud 
 - Calculates compound risk scores
 - Three severity tiers: INFO, WARN, CRITICAL
 
-### 5. Response Generation (Qwen-Max)
+### 5. Response Generation (GPT-5.6)
 - Severity-aware prompts
 - Profile-aware context
 - Real-time token streaming
@@ -89,11 +89,11 @@ CareAnchor is a production-ready healthcare AI assistant built on Alibaba Cloud 
 ## Data Flow
 
 ```
-User Input → WebSocket → Agent Graph → Qwen-Plus → Safety Check
+User Input → WebSocket → Agent Graph → Codex → Safety Check
                                           ↓
                                     Memory Store ← Clinical Profile
                                           ↓
-                                    Qwen-Max Response → WebSocket → User
+                                    GPT-5.6 Response → WebSocket → User
                                           ↓
                                     (If Critical) → Webhook → Clinician
 ```
@@ -105,9 +105,9 @@ User Input → WebSocket → Agent Graph → Qwen-Plus → Safety Check
 - **Framework**: FastAPI (async)
 - **Agent Framework**: LangGraph
 - **AI Models**: 
-  - Qwen-Plus (clinical extraction)
-  - Qwen-Max (response generation)
-- **AI Provider**: Alibaba Cloud Model Studio (DashScope)
+  - Codex (clinical extraction)
+  - GPT-5.6 (response generation)
+- **AI Provider**: OpenRouter
 - **Database**: SQLite (dev) / PostgreSQL (prod)
 - **WebSocket**: Native FastAPI WebSocket
 - **Testing**: Pytest (122 tests)

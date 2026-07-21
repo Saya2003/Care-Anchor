@@ -163,6 +163,6 @@ class TestGenerateResponse:
             ):
                 pass
             call_args = mock_stream.call_args
-            assert call_args[1]["model"] == "qwen-max"
+            assert call_args[1]["model"] == settings.response_model
             assert call_args[1]["temperature"] == 0.7
             assert call_args[1]["max_tokens"] == 2048

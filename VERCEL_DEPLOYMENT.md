@@ -23,9 +23,13 @@ VITE_SUPABASE_PROJECT_ID=your_project_id
 VITE_SUPABASE_PUBLISHABLE_KEY=your_publishable_key
 VITE_SUPABASE_URL=https://your_project_id.supabase.co
 
-# AI Configuration
-DASHSCOPE_API_KEY=your_dashscope_api_key
-OPENROUTER_API_KEY=your_backup_openrouter_key
+# AI Configuration - Codex and GPT-5.6
+OPENROUTER_API_KEY=your_openrouter_key
+EXTRACTION_MODEL=openai/codex
+RESPONSE_MODEL=openai/gpt-5.6
+
+# Optional: DashScope for image analysis  
+DASHSCOPE_API_KEY=your_dashscope_key
 
 # Application Settings
 CORS_ORIGINS=https://*.vercel.app

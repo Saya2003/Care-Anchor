@@ -134,7 +134,7 @@ async def process_attachments(attachments: list[dict]) -> str:
 async def analyze_image(image_bytes: bytes, mime_type: str) -> str:
     """Analyze image using vision model."""
     import base64
-    from backend.core.qwen_client import vision_analyze
+    from backend.core.ai_client import vision_analyze
     
     try:
         base64_image = base64.b64encode(image_bytes).decode('utf-8')

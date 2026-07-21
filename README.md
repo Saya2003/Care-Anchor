@@ -1,6 +1,6 @@
 # CareAnchor
 
-An autonomous post-discharge clinical assistant that uses LangGraph agent orchestration, Alibaba Cloud Model Studio (Qwen), and real-time WebSocket streaming to monitor patient vitals, detect safety threshold breaches, and trigger human-in-the-loop interrupts with webhook notifications.
+An autonomous post-discharge clinical assistant that uses LangGraph agent orchestration, OpenRouter (Codex/GPT-5.6), and real-time WebSocket streaming to monitor patient vitals, detect safety threshold breaches, and trigger human-in-the-loop interrupts with webhook notifications.
 
 ---
 
@@ -27,12 +27,12 @@ An autonomous post-discharge clinical assistant that uses LangGraph agent orches
 
 CareAnchor is a production-ready healthcare AI assistant designed to bridge the gap between hospital discharge and home recovery. After a patient is discharged, there is a critical window where complications can arise but clinical oversight is limited. CareAnchor fills this gap by providing continuous, intelligent monitoring through a conversational interface that:
 
-1. **Extracts clinical data** from patient conversations using **Qwen-Plus** for structured JSON extraction with intelligent forgetting (skips chitchat, preserves clinical signals)
+1. **Extracts clinical data** from patient conversations using **Codex** for structured JSON extraction with intelligent forgetting (skips chitchat, preserves clinical signals)
 2. **Maintains a persistent clinical profile** (vitals, medications, symptoms, care plan) across sessions in PostgreSQL
 3. **Monitors safety thresholds** in real-time with severity-tiered alerts (INFO, WARN, CRITICAL) and compound risk scoring
 4. **Triggers human-in-the-loop interrupts** when critical conditions are detected, with state machine tracking (PENDING_ACKNOWLEDGMENT → ACKNOWLEDGED/ESCALATED → RESOLVED)
 5. **Notifies clinicians** via webhook when immediate intervention is required, with rate limiting to prevent alert storms
-6. **Generates context-aware responses** using **Qwen-Max** for high-reasoning clinical safety responses that adapt based on severity tier
+6. **Generates context-aware responses** using **GPT-5.6** for high-reasoning clinical safety responses that adapt based on severity tier
 
 **Built for production-readiness**: Backed by over 120 automated tests covering safety constraints, edge cases, state machine transitions, and threshold logic.
 
@@ -98,9 +98,9 @@ CareAnchor provides an always-available clinical companion that:
 │         │                 │                                      │
 │         ▼                 ▼                                      │
 │  ┌──────────────┐  ┌──────────────┐  ┌─────────────────────┐   │
-│  │ Qwen Cloud   │  │  PostgreSQL  │  │  Interrupt Controller│   │
-│  │ (DashScope)  │  │  (Clinical   │  │  (State Machine)     │   │
-│  │              │  │   Profiles)  │  │                      │   │
+│  │ OpenRouter   │  │  PostgreSQL  │  │  Interrupt Controller│   │
+│  │ (Codex/      │  │  (Clinical   │  │  (State Machine)     │   │
+│  │  GPT-5.6)    │  │   Profiles)  │  │                      │   │
 │  └──────────────┘  └──────────────┘  └─────────────────────┘   │
 └─────────────────────────────────────────────────────────────────┘
                               │
@@ -119,8 +119,8 @@ CareAnchor provides an always-available clinical companion that:
 
 ## Features
 
-### Clinical Data Extraction (Qwen-Plus)
-- **Structured JSON extraction** via Qwen-Plus with JSON mode for reliable parsing
+### Clinical Data Extraction (Codex)
+- **Structured JSON extraction** via Codex with JSON mode for reliable parsing
 - **Intelligent forgetting**: skips non-clinical messages (chitchat detection) to avoid polluting patient profiles
 - Extracts vitals, medications, symptoms, and care plan details from natural conversation
 - Deep merge algorithm preserves historical data while updating new observations
@@ -137,7 +137,7 @@ CareAnchor provides an always-available clinical companion that:
 - **Acknowledgment Tracking**: Records who acknowledged and when with full audit trail
 - **Persistent Audit Trail**: All safety events stored in PostgreSQL with severity, alerts, and risk score
 
-### Qwen-Max Clinical Response Generation
+### GPT-5.6 Clinical Response Generation
 - **Severity-aware prompts**: Different system prompts for WARN (monitor + recheck) vs CRITICAL (emergency immediately)
 - **Profile-aware responses**: References patient's clinical profile naturally in conversation
 - **Safety override mode**: Disables routine advice when critical thresholds breached
@@ -160,9 +160,9 @@ CareAnchor provides an always-available clinical companion that:
 ### Backend
 - **Framework**: FastAPI with async/await
 - **Agent Orchestration**: LangGraph (dual compiled graphs for REST and WebSocket)
-- **LLM Provider**: Alibaba Cloud Model Studio (DashScope)
-  - **Qwen-Plus**: Structured JSON extraction with JSON mode for clinical data parsing
-  - **Qwen-Max**: High-reasoning response generation with severity-aware prompts
+- **LLM Provider**: OpenRouter
+  - **Codex**: Structured JSON extraction with JSON mode for clinical data parsing
+  - **GPT-5.6**: High-reasoning response generation with severity-aware prompts
 - **Database**: PostgreSQL with asyncpg (clinical profiles, chat logs, safety events)
 - **HTTP Client**: httpx for webhook notifications
 
@@ -189,8 +189,8 @@ care-companion-ai/
 ├── backend/
 │   ├── agents/
 │   │   ├── graph.py              # LangGraph agent orchestration
-│   │   ├── clinical_responder.py # Qwen-Max response generation
-│   │   ├── memory_refiner.py     # Qwen-Plus clinical extraction
+│   │   ├── clinical_responder.py # GPT-5.6 response generation
+│   │   ├── memory_refiner.py     # Codex clinical extraction
 │   │   └── tools.py              # Safety threshold checking
 │   ├── api/
 │   │   ├── routes.py             # REST endpoints
@@ -200,7 +200,7 @@ care-companion-ai/
 │   │   ├── safety.py             # Safety threshold logic
 │   │   ├── interrupt.py          # Interrupt state machine
 │   │   ├── memory_store.py       # PostgreSQL CRUD
-│   │   └── qwen_client.py        # Alibaba Cloud API client
+│   │   └── ai_client.py        # OpenRouter API client
 │   ├── db/
 │   │   └── postgres.py           # Database schema & pool
 │   ├── tests/                    # Pytest test suite
@@ -328,9 +328,9 @@ The frontend will be available at `http://localhost:5173`.
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `DASHSCOPE_API_KEY` | Alibaba Cloud Model Studio API key | (required) |
-| `QWEN_PLUS_MODEL` | Model for clinical extraction | `qwen-plus` |
-| `QWEN_MAX_MODEL` | Model for response generation | `qwen-max` |
+| `OPENROUTER_API_KEY` | OpenRouter API key for Codex/GPT-5.6 | (required) |
+| `EXTRACTION_MODEL` | Model for clinical extraction | `openai/codex` |
+| `RESPONSE_MODEL` | Model for response generation | `openai/gpt-5.6` |
 | `DATABASE_URL` | PostgreSQL connection string | `postgresql+asyncpg://postgres:postgres@localhost:5432/careanchor` |
 | `ALERT_WEBHOOK_URL` | Webhook for safety alerts | (optional) |
 | `ESCALATION_COOLDOWN_SECONDS` | Minimum seconds between webhook calls | `300` |
@@ -517,8 +517,8 @@ MIT License
 
 ## Acknowledgments
 
-- Built for the Alibaba Cloud hackathon
-- Uses Alibaba Cloud Model Studio (DashScope) for Qwen model inference
-- Deployed on Alibaba Cloud ECS
+- Built for advanced AI applications
+- Uses OpenRouter for Codex and GPT-5.6 model inference
+- Deployed on cloud infrastructure
 - UI components from shadcn/ui
 - Agent orchestration with LangGraph

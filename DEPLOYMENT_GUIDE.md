@@ -120,8 +120,8 @@ nano .env
 ```
 
 Update these critical values:
-- `DASHSCOPE_API_KEY` - Your DashScope API key from Step 2
-- `QWEN_API_KEY` - Same as DASHSCOPE_API_KEY
+- `OPENROUTER_API_KEY` - Your OpenRouter API key for Codex/GPT-5.6
+- `DASHSCOPE_API_KEY` - Optional, for image analysis fallback
 - `DATABASE_URL` - Keep as: `postgresql+asyncpg://postgres:postgres@db:5432/careanchor`
 - `POSTGRES_PASSWORD` - Change to a secure password
 - `CORS_ORIGINS` - Add your ECS public IP: `http://YOUR_PUBLIC_IP,http://localhost:5173`
@@ -192,8 +192,8 @@ docker-compose ps
 # Show Alibaba Cloud runtime
 curl http://YOUR_PUBLIC_IP/alibaba/runtime | jq
 
-# Show logs with Qwen/Alibaba mentions
-docker-compose logs api | grep -i "qwen\|alibaba\|dashscope" | tail -20
+# Show logs with AI model mentions
+docker-compose logs api | grep -i "codex\|gpt\|openrouter" | tail -20
 ```
 
 Take screenshot of terminal showing these commands and their output.

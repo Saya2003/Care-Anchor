@@ -82,7 +82,7 @@ chmod +x deploy/quick-deploy.sh
 **Suggested script:**
 1. **Intro (30s)**: "CareAnchor - AI clinical assistant with Alibaba Cloud"
 2. **Demo (2min)**: Dashboard → Chat → Mention vitals → Show safety alerts → Export PDF
-3. **Outro (30s)**: "Powered by Qwen models on Alibaba Cloud ECS"
+3. **Outro (30s)**: "Powered by Codex and GPT-5.6 models via OpenRouter"
 
 ### 4. Submit to Hackathon Platform
 - **Track**: MemoryAgent (clinical memory system)
@@ -99,7 +99,7 @@ chmod +x deploy/quick-deploy.sh
 | Public repo with OSI license | ✅ | MIT License in root |
 | Architecture diagram | ✅ | See ARCHITECTURE.md + README.md |
 | Clear what/who/how description | ✅ | Comprehensive README.md |
-| Qwen Cloud/Alibaba Cloud named | ✅ | Extensively mentioned, `/alibaba/runtime` endpoint |
+| Codex/GPT-5.6 models named | ✅ | Extensively mentioned, uses OpenRouter |
 | Backend screenshot on Alibaba | 🟡 | **Deploy first, then screenshot** |
 | 3-min demo video | 🟡 | **Record after deployment** |
 | Track selected | 🟡 | **Choose MemoryAgent track** |
@@ -160,10 +160,10 @@ chmod +x deploy/quick-deploy.sh
 - **Advanced AI integration** with structured JSON extraction
 - **Robust safety system** with multi-tier alerts and audit trails
 
-### Alibaba Cloud Integration
-- **DashScope API** for Qwen model inference
-- **ECS deployment** with Docker Compose orchestration
-- **Verification endpoint** proving Alibaba Cloud usage
+### AI Model Integration
+- **OpenRouter API** for Codex and GPT-5.6 model inference
+- **Advanced AI capabilities** with modern model architectures
+- **Verification endpoint** proving AI integration
 - **Extensive documentation** mentioning Alibaba Cloud throughout
 
 ### User Experience
@@ -212,7 +212,7 @@ CareAnchor is a **complete, production-ready healthcare AI application** that sh
 
 - ✅ Advanced AI agent orchestration with LangGraph
 - ✅ Real-time clinical monitoring and safety systems
-- ✅ Seamless Alibaba Cloud integration with Qwen models  
+- ✅ Seamless AI integration with Codex and GPT-5.6 models  
 - ✅ Professional UI/UX with comprehensive features
 - ✅ Thorough documentation and deployment automation
 - ✅ Extensive test coverage (122 tests)

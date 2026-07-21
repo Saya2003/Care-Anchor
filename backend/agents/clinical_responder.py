@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import AsyncIterator
 
 from backend.config import settings
-from backend.core.qwen_client import stream_chat
+from backend.core.ai_client import stream_chat
 
 RESPONDER_PROMPT = """You are CareAnchor, an autonomous post-discharge clinical assistant helping patients recover at home.
 

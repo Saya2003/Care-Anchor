@@ -28,7 +28,7 @@
 - ✅ Error handling with graceful fallbacks
 - ✅ Import validation for optional dependencies
 
-**File:** `backend/core/qwen_client.py`
+**File:** `backend/core/ai_client.py`
 - ✅ Added vision_analyze function
 - ✅ Supports image analysis via OpenRouter API
 - ✅ Uses GPT-4o-mini vision model

@@ -7,8 +7,7 @@ from openai import AsyncOpenAI
 
 from backend.config import settings
 
-# Async AI client for LangGraph nodes. Supports Alibaba Cloud Qwen and OpenRouter.
-# Now configured to use Qwen 2.5 models on Alibaba Cloud by default for hackathon.
+# Async AI client for LangGraph nodes. Uses OpenRouter for Codex and GPT-5.6 models.
 
 _client: AsyncOpenAI | None = None
 
@@ -16,9 +15,15 @@ _client: AsyncOpenAI | None = None
 def get_client() -> AsyncOpenAI:
     global _client
     if _client is None:
-        # Temporarily prefer OpenRouter (working) while fixing DashScope API key
-        api_key = settings.openrouter_api_key or settings.dashscope_api_key
-        base_url = settings.openrouter_base_url if settings.openrouter_api_key else settings.dashscope_base_url
+        # Use OpenRouter for Codex and GPT-5.6 models
+        api_key = settings.openrouter_api_key
+        base_url = settings.openrouter_base_url
+        
+        if not api_key:
+            raise ValueError("OpenRouter API key is required for Codex and GPT-5.6 models")
+        
+        print(f"[AI] Initializing client for Codex and GPT-5.6 models")
+        print(f"[AI] Base URL: {base_url}")
         
         _client = AsyncOpenAI(
             api_key=api_key,
@@ -101,8 +106,8 @@ async def vision_analyze(image_data: str, prompt: str) -> str:
     """Analyze an image using a vision-capable model."""
     client = get_client()
     
-    # Use a vision-capable model - prefer OpenRouter's GPT-4o-mini for now
-    vision_model = "gpt-4o-mini" if settings.openrouter_api_key else "qwen-vl-plus"
+    # Use GPT-4o-mini for vision tasks as neither Codex nor GPT-5.6 support vision
+    vision_model = "gpt-4o-mini"
     
     try:
         response = await client.chat.completions.create(

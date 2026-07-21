@@ -38,9 +38,11 @@ if [ ! -f "$ENV_FILE" ]; then
   echo "  ✖ .env file not found at $ENV_FILE"
   echo "  → Creating from template"
   cat > "$ENV_FILE" <<-ENVEOF
-# Required: Alibaba Cloud Model Studio (DashScope)
+# Required: OpenRouter for AI models
+OPENROUTER_API_KEY="${OPENROUTER_API_KEY:-}"
+
+# Optional: DashScope for image analysis fallback  
 DASHSCOPE_API_KEY="${ALIYUN_DASHSCOPE_API_KEY:-}"
-QWEN_API_KEY="${ALIYUN_DASHSCOPE_API_KEY:-}"
 
 # Required: PostgreSQL (Docker Compose default)
 DATABASE_URL="postgresql+asyncpg://postgres:postgres@db:5432/careanchor"

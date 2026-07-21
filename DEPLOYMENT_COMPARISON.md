@@ -113,7 +113,7 @@ For **AI Hackathons** requiring Alibaba Cloud:
 
 ### Hackathon Compliance Checklist
 - [ ] Deployed on Alibaba Cloud infrastructure ✅
-- [ ] Uses Qwen 2.5 models via DashScope ✅
+- [ ] Uses Codex and GPT-5.6 models via OpenRouter ✅
 - [ ] Real-time AI health assistance ✅
 - [ ] Comprehensive health analytics ✅
 - [ ] Voice interaction capabilities ✅
