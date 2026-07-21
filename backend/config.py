@@ -24,13 +24,13 @@ class Settings:
     openrouter_api_key: str = os.getenv("OPENROUTER_API_KEY", "")
     openrouter_base_url: str = os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1")
     
-    # Updated model configuration - Using Codex and GPT-5.6
-    extraction_model: str = os.getenv("EXTRACTION_MODEL", "openai/codex")
-    response_model: str = os.getenv("RESPONSE_MODEL", "openai/gpt-5.6")
+    # Updated model configuration - Using GPT-5 Codex and GPT-5.6 Sol
+    extraction_model: str = os.getenv("EXTRACTION_MODEL", "openai/gpt-5-codex")
+    response_model: str = os.getenv("RESPONSE_MODEL", "openai/gpt-5.6-sol")
     
     # Alternative model names (some providers may use different naming)
-    codex_model: str = os.getenv("CODEX_MODEL", "openai/codex")
-    gpt_5_6_model: str = os.getenv("GPT_5_6_MODEL", "openai/gpt-5.6")
+    codex_model: str = os.getenv("CODEX_MODEL", "openai/gpt-5-codex")
+    gpt_5_6_model: str = os.getenv("GPT_5_6_MODEL", "openai/gpt-5.6-sol")
     
     # Optional DashScope for fallback image analysis
     dashscope_api_key: str = os.getenv("DASHSCOPE_API_KEY", "")

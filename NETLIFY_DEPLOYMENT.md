@@ -36,12 +36,12 @@ VITE_SUPABASE_PROJECT_ID=your_project_id
 VITE_SUPABASE_PUBLISHABLE_KEY=your_publishable_key
 VITE_SUPABASE_URL=https://your_project_id.supabase.co
 
-# AI Configuration - Codex and GPT-5.6
+# AI Configuration - GPT-5 Codex and GPT-5.6 Sol
 OPENROUTER_API_KEY=your_openrouter_key
-EXTRACTION_MODEL=openai/codex
-RESPONSE_MODEL=openai/gpt-5.6
-CODEX_MODEL=openai/codex
-GPT_5_6_MODEL=openai/gpt-5.6
+EXTRACTION_MODEL=openai/gpt-5-codex
+RESPONSE_MODEL=openai/gpt-5.6-sol
+CODEX_MODEL=openai/gpt-5-codex
+GPT_5_6_MODEL=openai/gpt-5.6-sol
 
 # Optional: DashScope for image analysis
 DASHSCOPE_API_KEY=your_dashscope_api_key
