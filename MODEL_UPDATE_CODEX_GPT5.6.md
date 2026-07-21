@@ -8,8 +8,8 @@ CareAnchor has been updated to use advanced AI models for enhanced clinical assi
 
 | **Function** | **Model** | **Purpose** |
 |-------------|-----------|-------------|
-| **Clinical Data Extraction** | `openai/codex` | Parse and structure patient messages into clinical data |
-| **Response Generation** | `openai/gpt-5.6` | Generate intelligent, personalized health responses |
+| **Clinical Data Extraction** | `openai/gpt-5-codex` | Parse and structure patient messages into clinical data |
+| **Response Generation** | `openai/gpt-5.6-sol` | Generate intelligent, personalized health responses |
 | **Vision Analysis** | `gpt-4o-mini` | Analyze medical images and documents |
 
 ### **🔧 Technical Changes Made**
@@ -17,18 +17,18 @@ CareAnchor has been updated to use advanced AI models for enhanced clinical assi
 #### **1. Backend Configuration (`backend/config.py`)**
 ```python
 # Updated model specifications
-extraction_model: str = "openai/codex"
-response_model: str = "openai/gpt-5.6"
-codex_model: str = "openai/codex"
-gpt_5_6_model: str = "openai/gpt-5.6"
+extraction_model: str = "openai/gpt-5-codex"
+response_model: str = "openai/gpt-5.6-sol"
+codex_model: str = "openai/gpt-5-codex"
+gpt_5_6_model: str = "openai/gpt-5.6-sol"
 ```
 
 #### **2. Environment Configuration**
 ```bash
 # Primary AI Configuration
 OPENROUTER_API_KEY="your_openrouter_api_key"
-EXTRACTION_MODEL="openai/codex"
-RESPONSE_MODEL="openai/gpt-5.6"
+EXTRACTION_MODEL="openai/gpt-5-codex"
+RESPONSE_MODEL="openai/gpt-5.6-sol"
 
 # Optional: DashScope for image analysis only
 DASHSCOPE_API_KEY="your_dashscope_api_key"
@@ -69,8 +69,8 @@ DASHSCOPE_API_KEY="your_dashscope_api_key"
 ```bash
 # Update your .env file
 OPENROUTER_API_KEY="sk-or-v1-your-actual-key"
-EXTRACTION_MODEL="openai/codex"
-RESPONSE_MODEL="openai/gpt-5.6"
+EXTRACTION_MODEL="openai/gpt-5-codex"
+RESPONSE_MODEL="openai/gpt-5.6-sol"
 
 # Restart backend
 python -m uvicorn backend.main:app --reload --port 8000
@@ -80,8 +80,8 @@ python -m uvicorn backend.main:app --reload --port 8000
 
 **For Vercel/Netlify:**
 - Add `OPENROUTER_API_KEY` in dashboard environment variables
-- Set `EXTRACTION_MODEL=openai/codex`
-- Set `RESPONSE_MODEL=openai/gpt-5.6`
+- Set `EXTRACTION_MODEL=openai/gpt-5-codex`
+- Set `RESPONSE_MODEL=openai/gpt-5.6-sol`
 
 **For Alibaba Cloud ECS:**
 - Update `.env` file with OpenRouter credentials

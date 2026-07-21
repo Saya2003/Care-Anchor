@@ -155,6 +155,23 @@ async def ensure_schema(db: aiosqlite.Connection | None = None) -> None:
         );
 
         CREATE INDEX IF NOT EXISTS idx_memory_redactions_message ON memory_redactions(message_id);
+
+        -- Emergency contacts table
+        CREATE TABLE IF NOT EXISTS emergency_contacts (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id TEXT NOT NULL,
+            name TEXT NOT NULL,
+            phone TEXT NOT NULL,
+            email TEXT,
+            relationship TEXT NOT NULL,
+            is_primary INTEGER DEFAULT 0,
+            notes TEXT,
+            created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_emergency_contacts_user_id ON emergency_contacts(user_id);
+        CREATE INDEX IF NOT EXISTS idx_emergency_contacts_primary ON emergency_contacts(user_id, is_primary);
     """)
     await db.commit()
 
