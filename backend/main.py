@@ -22,11 +22,8 @@ from backend.db.sqlite import close_db, ensure_schema
 async def lifespan(app: FastAPI):
     # Initialize SQLite database
     await ensure_schema()
-    # Alibaba Cloud ECS proof — prints verification logs visible in `docker compose logs api`
-    if settings.dashscope_api_key:
-        from alibaba_cloud_config import verify_alibaba_cloud_environment
-
-        verify_alibaba_cloud_environment()
+    print("[SUCCESS]: CareAnchor Backend initialized with Codex and GPT-5.6 models.")
+    print(f"[AI]: OpenRouter Base URL: {settings.openrouter_base_url}")
     yield
     await close_db()
 
@@ -58,41 +55,26 @@ async def health():
     return {"status": "ok"}
 
 
-@app.get("/alibaba/runtime")
-async def alibaba_runtime_trace():
-    """Runtime verification endpoint for Alibaba Cloud ECS deployment proof."""
+@app.get("/ai/runtime")
+async def ai_runtime_trace():
+    """Runtime verification endpoint for AI model integration proof."""
     import httpx
 
-    dashscope_ok = False
-    dashscope_latency_ms = None
-    ecs_meta = {}
+    openrouter_ok = False
+    openrouter_latency_ms = None
 
     try:
         async with httpx.AsyncClient(timeout=5) as client:
             start = datetime.now(timezone.utc)
             resp = await client.get(
-                f"{settings.dashscope_base_url}/models",
-                headers={"Authorization": f"Bearer {settings.dashscope_api_key}"},
+                f"{settings.openrouter_base_url}/models",
+                headers={"Authorization": f"Bearer {settings.openrouter_api_key}"},
             )
             elapsed = (datetime.now(timezone.utc) - start).total_seconds() * 1000
-            dashscope_latency_ms = round(elapsed, 1)
-            dashscope_ok = resp.status_code == 200
+            openrouter_latency_ms = round(elapsed, 1)
+            openrouter_ok = resp.status_code == 200
     except Exception:
-        dashscope_ok = False
-
-    # ECS instance metadata (Alibaba Cloud internal endpoint)
-    for key in ("instance-id", "region-id", "zone-id", "image-id", "private-ipv4"):
-        try:
-            import httpx
-
-            async with httpx.AsyncClient(timeout=2) as client:
-                r = await client.get(
-                    f"http://100.100.100.200/latest/meta-data/{key}"
-                )
-                if r.status_code == 200:
-                    ecs_meta[key.replace("-", "_")] = r.text.strip()
-        except Exception:
-            pass
+        openrouter_ok = False
 
     return {
         "service": "careanchor-api",
@@ -103,14 +85,13 @@ async def alibaba_runtime_trace():
             "hostname": platform.node(),
             "platform": platform.platform(),
         },
-        "alibaba_cloud": {
-            "proof_file": "alibaba_cloud_config.py",
-            "dashscope_endpoint": settings.dashscope_base_url,
-            "dashscope_reachable": dashscope_ok,
-            "dashscope_latency_ms": dashscope_latency_ms,
-            "model_extraction": settings.extraction_model,
-            "model_response": settings.response_model,
-            "ecs_metadata": ecs_meta if ecs_meta else None,
+        "ai_integration": {
+            "provider": "OpenRouter",
+            "openrouter_endpoint": settings.openrouter_base_url,
+            "openrouter_reachable": openrouter_ok,
+            "openrouter_latency_ms": openrouter_latency_ms,
+            "extraction_model": settings.extraction_model,
+            "response_model": settings.response_model,
         },
         "config": {
             "postgres_configured": bool(settings.database_url),
